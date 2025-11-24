@@ -601,7 +601,7 @@
         img.src = photoDataUrl;
         img.className = 'message-img';
         img.alt = 'Shared photo';
-        // Create blob URL for safer viewing instead of opening data URL directly
+        // Download image when clicked
         img.onclick = () => {
             const link = document.createElement('a');
             link.href = photoDataUrl;
