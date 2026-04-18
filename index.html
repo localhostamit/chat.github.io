@@ -3,542 +3,989 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GhostLink | Professional P2P</title>
+    <title>GhostLink | Private Workspace</title>
     
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
     <style>
+        /* --- CSS Reset & Variables --- */
         :root {
-            /* Unique Professional Theme: "Deep Aurora" */
-            --bg-deep: #050505;
-            --bg-panel: #111111;
-            --primary: #6366f1; /* Indigo */
-            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            --accent: #06b6d4; /* Cyan */
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border: rgba(255, 255, 255, 0.1);
-            --glass: blur(16px) saturate(180%);
-            --radius: 16px;
+            /* Zinc Color Palette for a professional, neutral dark mode */
+            --bg-base: #09090b;
+            --bg-surface: #18181b;
+            --bg-surface-hover: #27272a;
+            --border-color: #27272a;
+            --border-focus: #3f3f46;
+            
+            --text-primary: #f4f4f5;
+            --text-secondary: #a1a1aa;
+            --text-tertiary: #71717a;
+            
+            --accent-primary: #3b82f6; /* Clean professional blue */
+            --accent-hover: #2563eb;
+            --danger: #ef4444;
+            --success: #22c55e;
+            
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+            
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-deep);
-            color: var(--text-main);
+            font-family: var(--font-sans);
+            background-color: var(--bg-base);
+            color: var(--text-primary);
             height: 100vh;
+            display: flex;
             overflow: hidden;
+            line-height: 1.5;
+        }
+
+        /* --- Layout --- */
+        .app-layout {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 280px;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
+            transition: transform 0.3s ease;
+            z-index: 40;
         }
 
-        /* Ambient Background Mesh */
-        body::before {
-            content: '';
-            position: fixed;
-            top: -50%; left: -50%; width: 200%; height: 200%;
-            background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 50%);
-            z-index: -1;
-            animation: pulse 10s infinite alternate;
-        }
-        @keyframes pulse { 0% { opacity: 0.5; } 100% { opacity: 1; } }
-
-        /* --- Header --- */
-        header {
-            height: 60px;
-            padding: 0 20px;
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid var(--border);
-            background: rgba(5, 5, 5, 0.8);
-            backdrop-filter: var(--glass);
-            z-index: 50;
         }
 
         .brand {
-            font-weight: 700;
+            font-weight: 600;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand i { color: var(--text-secondary); }
+
+        .sidebar-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .section-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .id-container {
+            background-color: var(--bg-base);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            margin-bottom: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+        }
+
+        .id-container:hover { border-color: var(--border-focus); }
+
+        .id-value {
+            font-family: var(--font-mono);
+            font-size: 24px;
+            font-weight: 500;
+            color: var(--accent-primary);
+            letter-spacing: 2px;
+        }
+
+        .id-hint {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .form-group { margin-bottom: 16px; }
+
+        .input-field {
+            width: 100%;
+            background-color: var(--bg-base);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px 12px;
+            border-radius: var(--radius-md);
+            font-family: var(--font-sans);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .input-field:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px 16px;
+            border-radius: var(--radius-md);
+            font-family: var(--font-sans);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        .btn:active { transform: scale(0.98); }
+
+        .btn-primary {
+            background-color: var(--text-primary);
+            color: var(--bg-base);
+        }
+        
+        .btn-primary:hover { background-color: #e4e4e7; }
+
+        .btn-secondary {
+            background-color: var(--bg-surface-hover);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover { background-color: var(--border-color); }
+
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border-color);
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .sidebar-footer a {
+            color: var(--text-primary);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .sidebar-footer a:hover { text-decoration: underline; }
+
+        /* --- Chat Area --- */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-base);
+            position: relative;
+        }
+
+        .chat-header {
+            height: 65px;
+            padding: 0 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--bg-surface);
+        }
+
+        .connection-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            padding: 4px 10px;
+            background-color: var(--bg-base);
+            border: 1px solid var(--border-color);
+            border-radius: 99px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--text-tertiary);
+        }
+
+        .status-dot.online { background-color: var(--success); }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
             font-size: 20px;
-            letter-spacing: -0.5px;
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .sys-message {
+            align-self: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin: 8px 0;
+        }
+
+        .message {
+            max-width: 75%;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .message.me { align-self: flex-end; }
+        .message.peer { align-self: flex-start; }
+
+        .message-bubble {
+            padding: 10px 14px;
+            border-radius: var(--radius-lg);
+            font-size: 14px;
+            word-wrap: break-word;
+            line-height: 1.6;
+        }
+
+        .message.me .message-bubble {
+            background-color: var(--accent-primary);
+            color: #ffffff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.peer .message-bubble {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            align-self: flex-end;
+        }
+
+        .message.peer .message-time { align-self: flex-start; }
+
+        /* Media in Messages */
+        .message-image, .message-video {
+            max-width: 100%;
+            border-radius: var(--radius-md);
+            margin-top: 4px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .message-code {
+            margin-top: 4px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            font-size: 13px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .message-code pre { margin: 0; padding: 12px; }
+
+        /* --- Input Area --- */
+        .chat-input-wrapper {
+            padding: 20px 24px;
+            background-color: var(--bg-base);
+        }
+
+        .chat-input-container {
+            display: flex;
+            align-items: center;
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 8px;
+            gap: 8px;
+            transition: border-color 0.2s ease;
+        }
+
+        .chat-input-container:focus-within { border-color: var(--border-focus); }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .icon-btn:hover {
+            background-color: var(--bg-surface-hover);
+            color: var(--text-primary);
+        }
+
+        .message-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 14px;
+            padding: 8px;
+            outline: none;
+        }
+
+        .message-input::placeholder { color: var(--text-tertiary); }
+
+        .send-btn {
+            background-color: var(--text-primary);
+            color: var(--bg-base);
+        }
+        
+        .send-btn:hover {
+            background-color: #e4e4e7;
+            color: var(--bg-base);
+        }
+
+        /* --- Attachment Menu --- */
+        .attachment-menu {
+            position: absolute;
+            bottom: 80px;
+            left: 24px;
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 6px;
+            display: none;
+            flex-direction: column;
+            gap: 2px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 30;
+        }
+
+        .attachment-menu.show { display: flex; }
+
+        .menu-item {
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-        .brand i { font-size: 18px; -webkit-text-fill-color: var(--primary); }
-
-        .header-actions { display: flex; align-items: center; gap: 15px; }
-
-        .status-dot {
-            height: 10px; width: 10px;
-            background-color: #ef4444;
-            border-radius: 50%;
-            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
-            transition: all 0.3s;
-        }
-        .status-dot.online { background-color: #22c55e; box-shadow: 0 0 10px rgba(34, 197, 94, 0.5); }
-
-        .menu-btn {
-            background: none; border: none; color: white; font-size: 20px; cursor: pointer;
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
         }
 
-        /* --- Sidebar (Hamburger Menu) --- */
-        .sidebar-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); z-index: 99;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s;
-            backdrop-filter: blur(4px);
-        }
-        .sidebar-overlay.active { opacity: 1; pointer-events: auto; }
-
-        .sidebar {
-            position: fixed; top: 0; right: -320px; width: 300px; height: 100%;
-            background: var(--bg-panel); border-left: 1px solid var(--border);
-            z-index: 100; transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex; flex-direction: column;
-            padding: 24px;
-            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
-        }
-        .sidebar.active { right: 0; }
-
-        .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .sidebar-title { font-weight: 600; font-size: 18px; }
-
-        .control-group { background: rgba(255,255,255,0.03); padding: 16px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border); }
-        .control-label { font-size: 12px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; display: block; letter-spacing: 0.5px; }
-        
-        .id-box {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 24px; color: var(--primary); font-weight: 700;
-            text-align: center; cursor: pointer;
-            padding: 10px; border-radius: 8px;
-            background: rgba(99, 102, 241, 0.1);
-            transition: background 0.2s;
-        }
-        .id-box:active { transform: scale(0.98); }
-
-        input.peer-input {
-            width: 100%; background: #000; border: 1px solid var(--border);
-            padding: 12px; border-radius: 8px; color: white; font-family: inherit;
-            margin-bottom: 10px; outline: none;
-        }
-        input.peer-input:focus { border-color: var(--primary); }
-
-        .btn-connect {
-            width: 100%; padding: 12px; border: none; border-radius: 8px;
-            background: var(--primary-gradient); color: white; font-weight: 600;
-            cursor: pointer; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-        }
-        .btn-connect:active { transform: scale(0.98); }
-
-        .sidebar-footer {
-            margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border);
-            text-align: center; font-size: 12px; color: var(--text-muted); line-height: 1.6;
-        }
-        .sidebar-footer a { color: var(--primary); text-decoration: none; }
-
-        /* --- Chat Area --- */
-        .chat-container { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; }
-        
-        #messages {
-            flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px;
-            scroll-behavior: smooth;
+        .menu-item:hover {
+            background-color: var(--bg-surface-hover);
+            color: var(--text-primary);
         }
 
-        .msg {
-            max-width: 80%; padding: 12px 16px; border-radius: 18px;
-            font-size: 14px; line-height: 1.5; position: relative;
-            animation: fadeUp 0.3s ease; word-wrap: break-word;
-        }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .msg.me { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
-        .msg.peer { align-self: flex-start; background: rgba(255,255,255,0.08); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-        
-        .sys-msg {
-            align-self: center; font-size: 11px; color: var(--text-muted);
-            background: rgba(255,255,255,0.05); padding: 5px 15px; border-radius: 20px;
-        }
-
-        /* Media Styles in Chat */
-        .msg img, .msg video { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; }
-        .msg pre { margin: 5px 0 0 0; border-radius: 8px; overflow-x: auto; font-size: 12px; }
-
-        /* --- Input Area --- */
-        .input-bar {
-            padding: 15px 20px; background: rgba(5,5,5,0.9);
-            border-top: 1px solid var(--border); display: flex; gap: 12px; align-items: center;
-        }
-
-        .attach-btn-wrapper { position: relative; }
-        
-        .btn-icon {
-            width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border);
-            background: rgba(255,255,255,0.05); color: var(--text-main);
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-            transition: all 0.2s; font-size: 18px;
-        }
-        .btn-icon:hover { background: rgba(255,255,255,0.1); }
-        .btn-send { background: var(--primary); border: none; color: white; }
-
-        .text-input {
-            flex: 1; background: transparent; border: none; color: white;
-            font-size: 15px; font-family: inherit; outline: none;
-        }
-
-        /* Attachment Menu */
-        .attach-menu {
-            position: absolute; bottom: 60px; left: 0;
-            background: var(--bg-panel); border: 1px solid var(--border);
-            border-radius: 12px; padding: 8px; width: 180px;
-            display: none; flex-direction: column; gap: 5px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .attach-menu.active { display: flex; }
-        @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-        .menu-item {
-            display: flex; align-items: center; gap: 10px; padding: 10px;
-            border-radius: 8px; cursor: pointer; color: var(--text-muted); font-size: 13px;
-            transition: background 0.2s;
-        }
-        .menu-item:hover { background: rgba(255,255,255,0.05); color: white; }
-        .menu-item i { width: 20px; text-align: center; }
+        .menu-item input[type="file"] { display: none; }
 
         /* --- Modals --- */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 200;
-            display: none; align-items: center; justify-content: center;
-            backdrop-filter: blur(5px);
-        }
-        .modal-overlay.active { display: flex; }
-
-        .modal {
-            background: var(--bg-panel); width: 90%; max-width: 450px;
-            padding: 30px; border-radius: 20px; border: 1px solid var(--border);
-            text-align: center; position: relative;
-            animation: fadeUp 0.3s ease;
+        .modal-backdrop {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            backdrop-filter: blur(2px);
         }
 
-        .welcome-icon { font-size: 40px; color: var(--primary); margin-bottom: 20px; }
-        .modal h2 { margin-bottom: 10px; }
-        .modal p { color: var(--text-muted); font-size: 14px; line-height: 1.6; margin-bottom: 25px; }
+        .modal-backdrop.show { display: flex; }
+
+        .modal-content {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 400px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .modal-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--bg-base);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            font-size: 18px;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .modal-body ul {
+            margin-top: 12px;
+            padding-left: 20px;
+            color: var(--text-primary);
+        }
         
-        .code-input-area { width: 100%; height: 150px; background: #000; color: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-family: 'JetBrains Mono', monospace; margin-bottom: 15px; resize: none; }
+        .modal-body li { margin-bottom: 6px; }
 
-        /* Hidden Inputs */
-        input[type="file"] { display: none; }
+        .code-textarea {
+            width: 100%;
+            height: 200px;
+            background-color: var(--bg-base);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            padding: 12px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            resize: none;
+            outline: none;
+            margin-bottom: 16px;
+        }
 
+        .code-textarea:focus { border-color: var(--border-focus); }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        /* --- Toast Notifications --- */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* --- Mobile Responsive --- */
+        @media (max-width: 768px) {
+            .mobile-menu-btn { display: block; }
+            
+            .sidebar {
+                position: absolute;
+                left: -100%;
+                height: 100%;
+                box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+            }
+            
+            .sidebar.active { left: 0; }
+            
+            .chat-header { padding: 0 16px; }
+            .chat-input-wrapper { padding: 16px; }
+            .message { max-width: 85%; }
+        }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="brand">
-            <i class="fa-solid fa-ghost"></i> GhostLink
-        </div>
-        <div class="header-actions">
-            <div id="connection-status" class="status-dot" title="Offline"></div>
-            <button class="menu-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars-staggered"></i></button>
-        </div>
-    </header>
-
-    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-title">Connection</div>
-            <button class="menu-btn" onclick="toggleSidebar()"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-
-        <div class="control-group">
-            <span class="control-label">Your Secure ID</span>
-            <div class="id-box" id="my-id" onclick="copyId()">...</div>
-            <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 5px;">Tap to copy</div>
-        </div>
-
-        <div class="control-group">
-            <span class="control-label">Connect to Peer</span>
-            <input type="number" id="peer-id-input" class="peer-input" placeholder="Enter 4-digit ID">
-            <button class="btn-connect" onclick="connectToPeer()">Connect Securely</button>
-        </div>
-
-        <div class="sidebar-footer">
-            <p>Created by <strong>Amit Kumar</strong></p>
-            <p><a href="https://github.com/localhostamit/Ghostlink_chat" target="_blank"><i class="fa-brands fa-github"></i> Open Source Repo</a></p>
-            <p style="margin-top: 10px; opacity: 0.6;">v4.0 Professional</p>
+    <div id="welcome-modal" class="modal-backdrop show">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-icon"><i class="fa-solid fa-ghost"></i></div>
+                <h2 class="modal-title">Welcome to GhostLink</h2>
+            </div>
+            <div class="modal-body">
+                <p>GhostLink is a professional, open-source, peer-to-peer messaging workspace. Your data is never stored on any server.</p>
+                <ul>
+                    <li>Zero server retention</li>
+                    <li>Instant 4-digit pairing</li>
+                    <li>Share photos, videos, and code snippets</li>
+                </ul>
+            </div>
+            <button class="btn btn-primary" onclick="closeModal('welcome-modal')">Acknowledge & Start</button>
         </div>
     </div>
 
-    <div class="chat-container">
-        <div id="messages">
+    <div id="code-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-icon"><i class="fa-solid fa-code"></i></div>
+                <h2 class="modal-title">Share Snippet</h2>
+            </div>
+            <textarea id="code-input" class="code-textarea" placeholder="Paste your code here..."></textarea>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" style="width: auto;" onclick="closeModal('code-modal')">Cancel</button>
+                <button class="btn btn-primary" style="width: auto;" onclick="submitCode()">Send Snippet</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <i class="fa-solid fa-ghost"></i> GhostLink
+                </div>
+                <button class="icon-btn mobile-menu-btn" style="width:32px;height:32px;" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
 
-        <div class="input-bar">
-            <div class="attach-btn-wrapper">
-                <button class="btn-icon" onclick="toggleAttachMenu()"><i class="fa-solid fa-plus"></i></button>
-                
-                <div class="attach-menu" id="attach-menu">
-                    <label class="menu-item">
-                        <i class="fa-solid fa-image" style="color: #ec4899;"></i> Photo
-                        <input type="file" accept="image/*" onchange="sendFile(this, 'image')">
-                    </label>
-                    <label class="menu-item">
-                        <i class="fa-solid fa-video" style="color: #8b5cf6;"></i> Video
-                        <input type="file" accept="video/*" onchange="sendFile(this, 'video')">
-                    </label>
-                    <div class="menu-item" onclick="openCodeModal()">
-                        <i class="fa-solid fa-code" style="color: #06b6d4;"></i> Code Snippet
+            <div class="sidebar-content">
+                <div class="section-label">Your Workspace ID</div>
+                <div class="id-container" onclick="copyMyId()">
+                    <div class="id-value" id="my-id-display">....</div>
+                    <div class="id-hint">Click to copy</div>
+                </div>
+
+                <div class="section-label">Connect to Peer</div>
+                <div class="form-group">
+                    <input type="number" id="peer-id-input" class="input-field" placeholder="Enter 4-digit ID">
+                </div>
+                <button class="btn btn-primary" onclick="connectToPeer()">Establish Connection</button>
+            </div>
+
+            <div class="sidebar-footer">
+                <div>Developed by <strong>Amit Kumar</strong></div>
+                <a href="https://github.com/localhostamit/Ghostlink_chat" target="_blank" rel="noopener noreferrer">
+                    <i class="fa-brands fa-github"></i> Open Source Repository
+                </a>
+            </div>
+        </aside>
+
+        <main class="chat-area">
+            <header class="chat-header">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="connection-info">
+                    <div class="status-indicator" id="status-badge">
+                        <div class="status-dot" id="status-dot"></div>
+                        <span id="status-text">Waiting</span>
                     </div>
                 </div>
+                <div style="width: 24px;"></div> </header>
+
+            <div class="chat-messages" id="messages-container">
+                <div class="sys-message">Connection is end-to-end encrypted. Refreshing the page clears all data.</div>
             </div>
 
-            <input type="text" id="msg-input" class="text-input" placeholder="Type a message..." onkeypress="handleEnter(event)">
-            <button class="btn-icon btn-send" onclick="sendText()"><i class="fa-solid fa-paper-plane"></i></button>
-        </div>
-    </div>
+            <div class="chat-input-wrapper">
+                <div class="attachment-menu" id="attach-menu">
+                    <label class="menu-item">
+                        <i class="fa-solid fa-image fa-fw"></i> Upload Image
+                        <input type="file" accept="image/*" onchange="handleFileSelect(this, 'image')">
+                    </label>
+                    <label class="menu-item">
+                        <i class="fa-solid fa-video fa-fw"></i> Upload Video
+                        <input type="file" accept="video/*" onchange="handleFileSelect(this, 'video')">
+                    </label>
+                    <div class="menu-item" onclick="openCodeModal()">
+                        <i class="fa-solid fa-code fa-fw"></i> Paste Code
+                    </div>
+                </div>
 
-    <div id="welcome-modal" class="modal-overlay active">
-        <div class="modal">
-            <i class="fa-solid fa-shield-halved welcome-icon"></i>
-            <h2>Welcome to GhostLink</h2>
-            <p>A professional, open-source, peer-to-peer messaging tool. <br><br>
-               ✨ <strong>Features:</strong><br>
-               • Zero Server Storage<br>
-               • Instant 4-Digit IDs<br>
-               • Share Photos, Videos & Code<br>
-               • 100% Mobile Compatible
-            </p>
-            <button class="btn-connect" onclick="closeModal('welcome-modal')">Get Started</button>
-        </div>
-    </div>
-
-    <div id="code-modal" class="modal-overlay">
-        <div class="modal">
-            <h3>Share Code</h3>
-            <textarea id="code-input" class="code-input-area" placeholder="Paste your code here..."></textarea>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn-icon" style="flex:1; border-radius: 8px;" onclick="closeModal('code-modal')">Cancel</button>
-                <button class="btn-connect" style="flex:1;" onclick="sendCode()">Send</button>
+                <div class="chat-input-container">
+                    <button class="icon-btn" onclick="toggleAttachMenu()" title="Attach file">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                    <input type="text" id="chat-input" class="message-input" placeholder="Type your message..." onkeypress="handleEnter(event)">
+                    <button class="icon-btn send-btn" onclick="sendTextMessage()" title="Send">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
             </div>
-        </div>
+        </main>
     </div>
 
     <script>
-        // --- Variables ---
-        let peer;
-        let conn;
-        let myId;
-        const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB Limit for PeerJS stability
+        /**
+         * GhostLink Workspace Logic
+         * Clean, functional, and strictly client-side.
+         */
 
-        // --- Init ---
-        window.addEventListener('load', () => {
-            // Generate Random 4-digit ID
-            myId = Math.floor(Math.random() * 9000 + 1000).toString();
-            document.getElementById('my-id').innerText = myId;
+        // State variables
+        let peerInstance = null;
+        let activeConnection = null;
+        let myAssignedId = null;
+        const FILE_SIZE_LIMIT = 5 * 1024 * 1024; // 5MB
 
-            // Init PeerJS
-            peer = new Peer(myId, {
+        // Initialize application on load
+        window.addEventListener('DOMContentLoaded', initializeWorkspace);
+
+        function initializeWorkspace() {
+            // Generate a random 4-digit ID
+            myAssignedId = Math.floor(1000 + Math.random() * 9000).toString();
+            document.getElementById('my-id-display').textContent = myAssignedId;
+
+            // Setup PeerJS
+            peerInstance = new Peer(myAssignedId, {
                 debug: 0,
-                config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] }
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:global.stun.twilio.com:3478' }
+                    ]
+                }
             });
 
-            peer.on('open', (id) => {
-                updateStatus(true);
+            peerInstance.on('open', () => {
+                updateConnectionStatus('Online', 'ready');
             });
 
-            peer.on('connection', (c) => {
-                handleConnection(c);
+            // Listen for incoming connections
+            peerInstance.on('connection', (connection) => {
+                setupConnectionHandlers(connection);
             });
 
-            peer.on('error', (err) => {
-                alert("Connection Error: " + err.type);
+            peerInstance.on('error', (err) => {
+                showToast(`Error: ${err.type}`, 'error');
+                updateConnectionStatus('Disconnected', 'error');
             });
-        });
 
-        // --- Connection Logic ---
-        function connectToPeer() {
-            const targetId = document.getElementById('peer-id-input').value;
-            if (targetId.length !== 4) return alert("Please enter a valid 4-digit ID");
-            if (targetId === myId) return alert("Cannot connect to yourself.");
-
-            conn = peer.connect(targetId);
-            handleConnection(conn);
-            toggleSidebar(); // Close sidebar on connect
+            // Close menus when clicking outside
+            document.addEventListener('click', (e) => {
+                const menu = document.getElementById('attach-menu');
+                const trigger = document.querySelector('.icon-btn[title="Attach file"]');
+                if (menu.classList.contains('show') && !menu.contains(e.target) && !trigger.contains(e.target)) {
+                    menu.classList.remove('show');
+                }
+            });
         }
 
-        function handleConnection(c) {
-            conn = c;
-            conn.on('open', () => {
-                addSystemMsg(`Connected securely to ID: ${conn.peer}`);
-                updateStatus(true, true);
+        // --- Connection Management ---
+
+        function connectToPeer() {
+            const inputEl = document.getElementById('peer-id-input');
+            const targetId = inputEl.value.trim();
+
+            if (!/^\d{4}$/.test(targetId)) {
+                showToast('Please enter a valid 4-digit ID.', 'error');
+                return;
+            }
+
+            if (targetId === myAssignedId) {
+                showToast('Cannot establish connection with yourself.', 'error');
+                return;
+            }
+
+            updateConnectionStatus('Connecting...', 'pending');
+            const connection = peerInstance.connect(targetId, { reliable: true });
+            setupConnectionHandlers(connection);
+            
+            // On mobile, hide sidebar after attempting to connect
+            if(window.innerWidth <= 768) {
+                toggleSidebar();
+            }
+        }
+
+        function setupConnectionHandlers(connection) {
+            activeConnection = connection;
+
+            connection.on('open', () => {
+                updateConnectionStatus(`Connected to ${connection.peer}`, 'connected');
+                appendSystemMessage(`Secure session established with ID: ${connection.peer}`);
+                document.getElementById('peer-id-input').value = '';
             });
 
-            conn.on('data', (data) => {
-                renderMessage(data, 'peer');
+            connection.on('data', (payload) => {
+                renderMessage(payload, 'peer');
             });
 
-            conn.on('close', () => {
-                addSystemMsg("Peer disconnected.");
-                updateStatus(true, false);
-                conn = null;
+            connection.on('close', () => {
+                updateConnectionStatus('Online', 'ready');
+                appendSystemMessage('Peer disconnected the session.');
+                activeConnection = null;
             });
         }
 
         // --- Messaging Logic ---
-        
-        // 1. Send Text
-        function sendText() {
-            const input = document.getElementById('msg-input');
-            const text = input.value.trim();
-            if (!text) return;
 
-            const data = { type: 'text', content: text };
-            sendMessage(data);
-            input.value = '';
+        function sendTextMessage() {
+            const inputEl = document.getElementById('chat-input');
+            const text = inputEl.value.trim();
+            
+            if (!text) return;
+            
+            const payload = { type: 'text', content: text, timestamp: Date.now() };
+            transmitPayload(payload);
+            inputEl.value = '';
         }
 
-        // 2. Send File (Image/Video)
-        function sendFile(input, type) {
-            const file = input.files[0];
+        function handleFileSelect(inputElement, type) {
+            const file = inputElement.files[0];
             if (!file) return;
 
-            if (file.size > MAX_FILE_SIZE) {
-                alert("File too large. Max 5MB allowed in this version.");
+            if (file.size > FILE_SIZE_LIMIT) {
+                showToast(`File exceeds 5MB limit.`, 'error');
+                inputElement.value = '';
                 return;
             }
 
             const reader = new FileReader();
-            reader.onload = function(e) {
-                const data = {
+            reader.onload = (e) => {
+                const payload = {
                     type: type,
-                    content: e.target.result // Base64
+                    content: e.target.result,
+                    fileName: file.name,
+                    timestamp: Date.now()
                 };
-                sendMessage(data);
-                toggleAttachMenu(); // Close menu
+                transmitPayload(payload);
             };
             reader.readAsDataURL(file);
-            input.value = ''; // Reset input
+            
+            // Reset input and close menu
+            inputElement.value = '';
+            document.getElementById('attach-menu').classList.remove('show');
         }
 
-        // 3. Send Code
-        function sendCode() {
-            const code = document.getElementById('code-input').value;
-            if (!code.trim()) return;
+        function submitCode() {
+            const codeInput = document.getElementById('code-input');
+            const code = codeInput.value.trim();
+            
+            if (!code) return;
 
-            const data = { type: 'code', content: code };
-            sendMessage(data);
+            const payload = {
+                type: 'code',
+                content: code,
+                timestamp: Date.now()
+            };
+            transmitPayload(payload);
+            
+            codeInput.value = '';
             closeModal('code-modal');
-            document.getElementById('code-input').value = '';
         }
 
-        // Core Send Function
-        function sendMessage(data) {
-            if (conn && conn.open) {
-                conn.send(data);
-                renderMessage(data, 'me');
+        function transmitPayload(payload) {
+            if (activeConnection && activeConnection.open) {
+                activeConnection.send(payload);
+                renderMessage(payload, 'me');
             } else {
-                alert("Not connected to a peer!");
+                showToast('No active connection.', 'error');
             }
         }
 
-        // --- Rendering UI ---
-        function renderMessage(data, source) {
-            const container = document.getElementById('messages');
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `msg ${source}`;
+        // --- UI Rendering ---
 
-            if (data.type === 'text') {
-                msgDiv.textContent = data.content;
+        function renderMessage(payload, source) {
+            const container = document.getElementById('messages-container');
+            const wrapper = document.createElement('div');
+            wrapper.className = `message ${source}`;
+
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+
+            if (payload.type === 'text') {
+                bubble.textContent = payload.content;
             } 
-            else if (data.type === 'image') {
+            else if (payload.type === 'image') {
                 const img = document.createElement('img');
-                img.src = data.content;
-                msgDiv.appendChild(img);
+                img.src = payload.content;
+                img.className = 'message-image';
+                bubble.appendChild(img);
             } 
-            else if (data.type === 'video') {
+            else if (payload.type === 'video') {
                 const vid = document.createElement('video');
-                vid.src = data.content;
+                vid.src = payload.content;
                 vid.controls = true;
-                msgDiv.appendChild(vid);
+                vid.className = 'message-video';
+                bubble.appendChild(vid);
             } 
-            else if (data.type === 'code') {
+            else if (payload.type === 'code') {
+                const codeWrapper = document.createElement('div');
+                codeWrapper.className = 'message-code';
                 const pre = document.createElement('pre');
-                const code = document.createElement('code');
-                code.textContent = data.content;
-                pre.appendChild(code);
-                msgDiv.appendChild(pre);
-                hljs.highlightElement(code); // Apply syntax highlighting
+                const codeElement = document.createElement('code');
+                codeElement.textContent = payload.content;
+                pre.appendChild(codeElement);
+                codeWrapper.appendChild(pre);
+                bubble.appendChild(codeWrapper);
+                
+                // Apply syntax highlighting
+                setTimeout(() => {
+                    hljs.highlightElement(codeElement);
+                }, 0);
             }
 
-            container.appendChild(msgDiv);
-            container.scrollTop = container.scrollHeight;
+            wrapper.appendChild(bubble);
+
+            // Add timestamp
+            const time = document.createElement('span');
+            time.className = 'message-time';
+            const date = payload.timestamp ? new Date(payload.timestamp) : new Date();
+            time.textContent = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            wrapper.appendChild(time);
+
+            container.appendChild(wrapper);
+            scrollToBottom();
         }
 
-        function addSystemMsg(text) {
-            const container = document.getElementById('messages');
+        function appendSystemMessage(text) {
+            const container = document.getElementById('messages-container');
             const div = document.createElement('div');
-            div.className = 'sys-msg';
+            div.className = 'sys-message';
             div.textContent = text;
             container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
+            scrollToBottom();
         }
 
-        // --- UI Interactions ---
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.querySelector('.sidebar-overlay');
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
-        }
+        // --- Utility Functions ---
 
-        function toggleAttachMenu() {
-            document.getElementById('attach-menu').classList.toggle('active');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.remove('active');
-        }
-
-        function openCodeModal() {
-            toggleAttachMenu();
-            document.getElementById('code-modal').classList.add('active');
-        }
-
-        function copyId() {
-            navigator.clipboard.writeText(myId).then(() => {
-                const original = document.getElementById('my-id').innerText;
-                document.getElementById('my-id').innerText = "Copied!";
-                setTimeout(() => document.getElementById('my-id').innerText = original, 1000);
-            });
-        }
-
-        function updateStatus(isOnline, isConnected = false) {
-            const dot = document.getElementById('connection-status');
-            if (isConnected) {
+        function updateConnectionStatus(text, state) {
+            document.getElementById('status-text').textContent = text;
+            const dot = document.getElementById('status-dot');
+            if (state === 'connected') {
                 dot.className = 'status-dot online';
-                dot.title = "Connected";
-            } else if (isOnline) {
-                dot.className = 'status-dot online'; // Green but not connected
-                dot.style.opacity = '0.5';
-                dot.title = "Online (Waiting)";
             } else {
                 dot.className = 'status-dot';
             }
         }
 
+        function copyMyId() {
+            if (!myAssignedId) return;
+            navigator.clipboard.writeText(myAssignedId).then(() => {
+                showToast('Workspace ID copied to clipboard.', 'success');
+            }).catch(() => {
+                showToast('Failed to copy ID.', 'error');
+            });
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function toggleAttachMenu() {
+            document.getElementById('attach-menu').classList.toggle('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function openCodeModal() {
+            document.getElementById('attach-menu').classList.remove('show');
+            document.getElementById('code-modal').classList.add('show');
+            document.getElementById('code-input').focus();
+        }
+
         function handleEnter(e) {
-            if (e.key === 'Enter') sendText();
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendTextMessage();
+            }
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('messages-container');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            
+            let icon = 'fa-circle-info';
+            if (type === 'error') icon = 'fa-circle-exclamation';
+            if (type === 'success') icon = 'fa-circle-check';
+
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
     </script>
 </body>
