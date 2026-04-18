@@ -466,7 +466,14 @@
             });
         });
 
-        function initPeer() {
+        function initPeer(retryCount = 0) {
+            // Prevent infinite loops if the server is totally down
+            if (retryCount > 5) {
+                showToast('Servers busy. Please refresh the page.', 'error');
+                return;
+            }
+
+            // Generate 4-digit ID
             STATE.myId = Math.floor(1000 + Math.random() * 9000).toString();
             document.getElementById('my-id-display').textContent = STATE.myId;
 
@@ -478,7 +485,9 @@
             // Reconnection logic if signaling server drops
             STATE.peerInstance.on('disconnected', () => {
                 console.log("Disconnected from signaling server. Reconnecting...");
-                STATE.peerInstance.reconnect();
+                if (!STATE.peerInstance.destroyed) {
+                    STATE.peerInstance.reconnect();
+                }
             });
 
             // Handle incoming connections
@@ -504,13 +513,28 @@
                 document.getElementById('call-modal').classList.add('show');
             });
 
+            // Robust Error Handling
             STATE.peerInstance.on('error', (err) => {
+                console.error("PeerJS Error:", err.type);
+                
+                // If ID is taken, destroy this broken instance and try again instantly
+                if (err.type === 'unavailable-id') {
+                    STATE.peerInstance.destroy();
+                    initPeer(retryCount + 1);
+                    return;
+                }
+
                 STATE.isConnecting = false;
-                document.getElementById('btn-connect').disabled = false;
-                document.getElementById('btn-connect').textContent = 'Connect';
+                const btn = document.getElementById('btn-connect');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Connect';
+                }
                 
                 let errorMsg = "Network Error.";
                 if(err.type === 'peer-unavailable') errorMsg = "Peer not found or offline.";
+                if(err.type === 'network') errorMsg = "Lost connection to server.";
+                
                 showToast(errorMsg, 'error');
             });
         }
@@ -704,7 +728,7 @@
                 const muteBtn = document.getElementById('btn-mute');
                 if(STATE.audioMuted) {
                     muteBtn.innerHTML = '<i class="fa-solid fa-microphone-slash"></i>';
-                    muteBtn.style.color = var(--danger);
+                    muteBtn.style.color = 'var(--danger)';
                 } else {
                     muteBtn.innerHTML = '<i class="fa-solid fa-microphone"></i>';
                     muteBtn.style.color = 'white';
